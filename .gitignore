@@ -1,0 +1,29 @@
+# Бинарные файлы и исполняемые файлы
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Файлы среды разработки
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Зависимости и кэш Go
+/vendor/
+/go.sum
+*.test
+/bin/
+
+# Локальные конфигурационные файлы
+.env
+*.local.yml
+*.local.yaml
+config.local.*
+
+# Логи
+*.log
