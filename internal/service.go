@@ -5,17 +5,18 @@ package internal
 import (
 	"crypto/rand"
 	"math/big"
+	"url-shortener/internal/storage"
 )
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
 
 // Service предоставляет бизнес-логику для работы с URL
 type Service struct {
-	storage *Storage
+	storage storage.URLStorage
 }
 
 // NewService создает новый экземпляр сервиса
-func NewService(storage *Storage) *Service {
+func NewService(storage storage.URLStorage) *Service {
 	return &Service{storage: storage}
 }
 

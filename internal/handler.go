@@ -87,8 +87,6 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(URL{
-		OriginalURL: originalURL,
-	})
+	// Возвращаем редирект вместо JSON
+	http.Redirect(w, r, originalURL, http.StatusFound)
 }

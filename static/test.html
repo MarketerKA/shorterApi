@@ -95,31 +95,8 @@
                 return;
             }
 
-            fetch(`http://localhost:8080/${shortCode}`, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json',
-                }
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Ссылка не найдена');
-                }
-                return response.json();
-            })
-            .then(data => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
-                    <h4>Результат:</h4>
-                    <p>Оригинальный URL: <a href="${data.original_url}" target="_blank">${data.original_url}</a></p>
-                `;
-            })
-            .catch(error => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `<p style="color: red">Ошибка: ${error.message}</p>`;
-            });
+            // Открываем ссылку в новой вкладке
+            window.open(`http://localhost:8080/${shortCode}`, '_blank');
         }
     </script>
 </body>

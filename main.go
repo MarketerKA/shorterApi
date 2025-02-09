@@ -3,8 +3,10 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	"url-shortener/internal"
+	"url-shortener/internal/storage"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -16,19 +18,19 @@ func main() {
 	}
 
 	// Инициализация хранилища
-	storage, err := internal.NewStorage()
+	store, err := storage.NewStorage(os.Getenv("STORAGE_TYPE"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer storage.Close()
+	defer store.Close()
 
 	// Создаем таблицу
-	if err := storage.CreateTable(); err != nil {
+	if err := store.CreateTable(); err != nil {
 		log.Fatal("Ошибка создания таблицы:", err)
 	}
 
 	// Инициализация сервиса
-	service := internal.NewService(storage)
+	service := internal.NewService(store)
 
 	// Инициализация обработчика
 	handler := internal.NewHandler(service)
