@@ -53,6 +53,7 @@
     <div id="result"></div>
 
     <script>
+        // shortenURL отправляет запрос на создание короткой ссылки
         function shortenURL() {
             const url = document.getElementById('urlInput').value;
             if (!url) {
@@ -86,6 +87,7 @@
             });
         }
 
+        // getOriginalURL получает оригинальный URL по короткому коду
         function getOriginalURL() {
             const shortCode = document.getElementById('shortInput').value;
             if (!shortCode) {
@@ -93,8 +95,18 @@
                 return;
             }
 
-            fetch(`http://localhost:8080/${shortCode}`)
-            .then(response => response.json())
+            fetch(`http://localhost:8080/${shortCode}`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Ссылка не найдена');
+                }
+                return response.json();
+            })
             .then(data => {
                 const resultDiv = document.getElementById('result');
                 resultDiv.style.display = 'block';
@@ -106,7 +118,7 @@
             .catch(error => {
                 const resultDiv = document.getElementById('result');
                 resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `<p style="color: red">Ошибка: Ссылка не найдена</p>`;
+                resultDiv.innerHTML = `<p style="color: red">Ошибка: ${error.message}</p>`;
             });
         }
     </script>

@@ -21,6 +21,7 @@ func NewHandler(service *Service) *Handler {
 	return &Handler{service: service}
 }
 
+// CreateHandler обрабатывает POST-запросы для создания коротких URL
 func (h *Handler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
@@ -53,7 +54,18 @@ func (h *Handler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(url)
 }
 
+// GetHandler обрабатывает GET-запросы для получения оригинального URL по короткой ссылке
 func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
+	// Добавляем CORS заголовки
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	if r.Method != http.MethodGet {
 		http.Error(w, "Разрешены только GET запросы", http.StatusMethodNotAllowed)
 		return
@@ -75,5 +87,8 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	http.Redirect(w, r, originalURL, http.StatusFound)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(URL{
+		OriginalURL: originalURL,
+	})
 }
