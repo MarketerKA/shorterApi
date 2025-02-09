@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Тестирование сокращателя ссылок</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            margin-right: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест сокращателя ссылок</h1>
+    
+    <div class="input-group">
+        <h3>1. Создать короткую ссылку:</h3>
+        <input type="text" id="urlInput" placeholder="Введите длинный URL (например, https://google.com)">
+        <button onclick="shortenURL()">Сократить</button>
+    </div>
+
+    <div class="input-group">
+        <h3>2. Получить оригинальную ссылку:</h3>
+        <input type="text" id="shortInput" placeholder="Введите короткий код">
+        <button onclick="getOriginalURL()">Получить оригинал</button>
+    </div>
+
+    <div id="result"></div>
+
+    <script>
+        function shortenURL() {
+            const url = document.getElementById('urlInput').value;
+            if (!url) {
+                alert('Пожалуйста, введите URL');
+                return;
+            }
+
+            fetch('http://localhost:8080/create', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    original_url: url
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <h4>Результат:</h4>
+                    <p>Короткая ссылка: <strong>${data.short_url}</strong></p>
+                    <p>Полный URL: http://localhost:8080/${data.short_url}</p>
+                `;
+            })
+            .catch(error => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<p style="color: red">Ошибка: ${error.message}</p>`;
+            });
+        }
+
+        function getOriginalURL() {
+            const shortCode = document.getElementById('shortInput').value;
+            if (!shortCode) {
+                alert('Пожалуйста, введите короткий код');
+                return;
+            }
+
+            fetch(`http://localhost:8080/${shortCode}`)
+            .then(response => response.json())
+            .then(data => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `
+                    <h4>Результат:</h4>
+                    <p>Оригинальный URL: <a href="${data.original_url}" target="_blank">${data.original_url}</a></p>
+                `;
+            })
+            .catch(error => {
+                const resultDiv = document.getElementById('result');
+                resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<p style="color: red">Ошибка: Ссылка не найдена</p>`;
+            });
+        }
+    </script>
+</body>
+</html>
