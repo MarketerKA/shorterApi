@@ -35,8 +35,7 @@
 
 1. Клонируйте репозиторий:
    ```bash
-   git clone https://github.com/yourusername/url-shortener.git
-   cd url-shortener
+   git clone https://github.com/MarketerKA/shorterApi.git
    ```
 
 2. Создайте файл .env с настройками:
