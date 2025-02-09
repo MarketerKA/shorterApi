@@ -91,6 +91,40 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, originalURL, http.StatusFound)
 }
 
+// InfoHandler обрабатывает GET-запросы для получения информации о ссылке
+func (h *Handler) InfoHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type")
+
+	if r.Method == http.MethodOptions {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	if r.Method != http.MethodGet {
+		http.Error(w, "Разрешены только GET запросы", http.StatusMethodNotAllowed)
+		return
+	}
+
+	shortURL := r.URL.Path[len("/info/"):]
+	if shortURL == "" {
+		http.Error(w, "Короткая ссылка не указана", http.StatusBadRequest)
+		return
+	}
+
+	originalURL, err := h.service.GetOriginalURL(shortURL)
+	if err != nil {
+		h.handleError(w, err)
+		return
+	}
+
+	h.sendJSON(w, URL{
+		OriginalURL: originalURL,
+		ShortURL:    shortURL,
+	})
+}
+
 func (h *Handler) handleError(w http.ResponseWriter, err error) {
 	if appErr, ok := err.(*errors.AppError); ok {
 		switch appErr.Type {

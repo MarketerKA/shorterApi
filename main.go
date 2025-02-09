@@ -37,6 +37,7 @@ func main() {
 
 	// Настройка маршрутов
 	http.HandleFunc("/create", handler.CreateHandler)
+	http.HandleFunc("/info/", handler.InfoHandler)
 	http.HandleFunc("/", handler.GetHandler)
 
 	// Запуск сервера
