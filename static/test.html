@@ -57,7 +57,13 @@
         function shortenURL() {
             const url = document.getElementById('urlInput').value;
             if (!url) {
-                alert('Пожалуйста, введите URL');
+                showError('Пожалуйста, введите URL');
+                return;
+            }
+
+            // Базовая проверка URL на фронтенде
+            if (!url.match(/^https?:\/\/.+\..+/)) {
+                showError('Пожалуйста, введите корректный URL (например, https://google.com)');
                 return;
             }
 
@@ -72,19 +78,29 @@
             })
             .then(response => response.json())
             .then(data => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `
+                if (data.error) {
+                    showError(data.error);
+                    return;
+                }
+                showResult(`
                     <h4>Результат:</h4>
                     <p>Короткая ссылка: <strong>${data.short_url}</strong></p>
-                    <p>Полный URL: http://localhost:8080/${data.short_url}</p>
-                `;
+                    <p>Полный URL: <a href="http://localhost:8080/${data.short_url}" target="_blank">http://localhost:8080/${data.short_url}</a></p>
+                `);
             })
-            .catch(error => {
-                const resultDiv = document.getElementById('result');
-                resultDiv.style.display = 'block';
-                resultDiv.innerHTML = `<p style="color: red">Ошибка: ${error.message}</p>`;
-            });
+            .catch(error => showError(error.message));
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = `<p style="color: red">Ошибка: ${message}</p>`;
+        }
+
+        function showResult(html) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = html;
         }
 
         // getOriginalURL получает оригинальный URL по короткому коду

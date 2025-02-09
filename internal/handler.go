@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"net/http"
+	"url-shortener/internal/errors"
 )
 
 type Handler struct {
@@ -39,19 +40,18 @@ func (h *Handler) CreateHandler(w http.ResponseWriter, r *http.Request) {
 
 	var url URL
 	if err := json.NewDecoder(r.Body).Decode(&url); err != nil {
-		http.Error(w, "Ошибка чтения запроса", http.StatusBadRequest)
+		h.sendError(w, errors.NewValidationError("Некорректный формат запроса"))
 		return
 	}
 
 	shortURL, err := h.service.CreateShortURL(url.OriginalURL)
 	if err != nil {
-		http.Error(w, "Ошибка сохранения в базу данных", http.StatusInternalServerError)
+		h.handleError(w, err)
 		return
 	}
 
 	url.ShortURL = shortURL
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(url)
+	h.sendJSON(w, url)
 }
 
 // GetHandler обрабатывает GET-запросы для получения оригинального URL по короткой ссылке
@@ -89,4 +89,39 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Возвращаем редирект вместо JSON
 	http.Redirect(w, r, originalURL, http.StatusFound)
+}
+
+func (h *Handler) handleError(w http.ResponseWriter, err error) {
+	if appErr, ok := err.(*errors.AppError); ok {
+		switch appErr.Type {
+		case errors.ValidationError:
+			h.sendError(w, appErr, http.StatusBadRequest)
+		case errors.NotFoundError:
+			h.sendError(w, appErr, http.StatusNotFound)
+		case errors.DatabaseError:
+			h.sendError(w, appErr, http.StatusInternalServerError)
+		default:
+			h.sendError(w, appErr, http.StatusInternalServerError)
+		}
+		return
+	}
+	h.sendError(w, errors.NewDatabaseError(err), http.StatusInternalServerError)
+}
+
+func (h *Handler) sendError(w http.ResponseWriter, err error, status ...int) {
+	statusCode := http.StatusInternalServerError
+	if len(status) > 0 {
+		statusCode = status[0]
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(statusCode)
+	json.NewEncoder(w).Encode(map[string]string{
+		"error": err.Error(),
+	})
+}
+
+func (h *Handler) sendJSON(w http.ResponseWriter, data interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(data)
 }

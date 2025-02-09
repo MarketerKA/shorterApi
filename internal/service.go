@@ -4,8 +4,11 @@ package internal
 
 import (
 	"crypto/rand"
+	"database/sql"
 	"math/big"
+	"url-shortener/internal/errors"
 	"url-shortener/internal/storage"
+	"url-shortener/internal/validator"
 )
 
 const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_"
@@ -23,7 +26,12 @@ func NewService(storage storage.URLStorage) *Service {
 // CreateShortURL создает короткий URL для оригинального URL
 // Если оригинальный URL уже существует, возвращает существующий короткий URL
 func (s *Service) CreateShortURL(originalURL string) (string, error) {
-	// Проверяем, существует ли уже такой URL
+	// Валидация URL
+	if err := validator.ValidateURL(originalURL); err != nil {
+		return "", err
+	}
+
+	// Проверяем существующий URL
 	if existingURL, err := s.storage.GetExistingShortURL(originalURL); err == nil {
 		return existingURL, nil
 	}
@@ -31,7 +39,7 @@ func (s *Service) CreateShortURL(originalURL string) (string, error) {
 	shortURL := generateShortURL()
 	err := s.storage.SaveURL(originalURL, shortURL)
 	if err != nil {
-		return "", err
+		return "", errors.NewDatabaseError(err)
 	}
 
 	return shortURL, nil
@@ -39,7 +47,19 @@ func (s *Service) CreateShortURL(originalURL string) (string, error) {
 
 // GetOriginalURL возвращает оригинальный URL по короткому URL
 func (s *Service) GetOriginalURL(shortURL string) (string, error) {
-	return s.storage.GetOriginalURL(shortURL)
+	if err := validator.ValidateShortURL(shortURL); err != nil {
+		return "", err
+	}
+
+	originalURL, err := s.storage.GetOriginalURL(shortURL)
+	if err == sql.ErrNoRows {
+		return "", errors.NewNotFoundError("Ссылка не найдена")
+	}
+	if err != nil {
+		return "", errors.NewDatabaseError(err)
+	}
+
+	return originalURL, nil
 }
 
 // generateShortURL генерирует случайную строку для короткого URL
