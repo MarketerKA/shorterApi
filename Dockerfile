@@ -16,7 +16,10 @@ ENV GOOS=linux
 COPY go.mod ./
 
 # Скачиваем зависимости и создаем go.sum
-RUN go mod download && go mod verify
+RUN go mod download && \
+    go get github.com/joho/godotenv && \
+    go get github.com/lib/pq && \
+    go mod tidy
 
 # Копируем исходный код
 COPY . .

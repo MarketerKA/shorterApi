@@ -5,3 +5,7 @@ docker-compose.yml
 *.md
 *.log
 tmp/
+
+# НЕ игнорировать go.mod и go.sum
+!go.mod
+!go.sum

@@ -27,3 +27,18 @@ config.local.*
 
 # Логи
 *.log
+
+# Binaries
+/main
+/bin
+
+# IDE files
+.idea/
+.vscode/
+
+# Environment files
+.env
+.env.local
+
+# НЕ игнорировать go.sum
+!go.sum
