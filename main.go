@@ -35,6 +35,10 @@ func main() {
 	// Инициализация обработчика
 	handler := internal.NewHandler(service)
 
+	// Добавляем обработку статических файлов
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	// Настройка маршрутов
 	http.HandleFunc("/create", handler.CreateHandler)
 	http.HandleFunc("/info/", handler.InfoHandler)
