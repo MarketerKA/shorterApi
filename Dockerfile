@@ -4,11 +4,13 @@ FROM golang:1.22-alpine AS builder
 WORKDIR /app
 
 # Установка необходимых инструментов для тестирования и сборки
-RUN apk add --no-cache gcc musl-dev git
+RUN apk add --no-cache gcc musl-dev git make
 
 # Инициализация модуля и настройка GOPROXY
 ENV GOPROXY=direct
 ENV GO111MODULE=on
+ENV CGO_ENABLED=0
+ENV GOOS=linux
 
 # Копируем только go.mod сначала
 COPY go.mod ./
@@ -22,8 +24,8 @@ COPY . .
 # Запускаем тесты
 RUN go test -v ./internal/tests/...
 
-# Собираем приложение только если тесты прошли успешно
-RUN CGO_ENABLED=0 GOOS=linux go build -o main .
+# Собираем приложение
+RUN go build -o main .
 
 # Финальный этап
 FROM alpine:latest

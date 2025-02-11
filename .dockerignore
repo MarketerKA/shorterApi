@@ -2,3 +2,6 @@
 .gitignore
 README.md
 docker-compose.yml
+*.md
+*.log
+tmp/
