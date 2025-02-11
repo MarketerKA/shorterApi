@@ -5,7 +5,8 @@ package internal
 import (
 	"crypto/rand"
 	"database/sql"
-	"math/big"
+	"encoding/base64"
+	"net/url"
 	"url-shortener/internal/errors"
 	"url-shortener/internal/storage"
 	"url-shortener/internal/validator"
@@ -27,18 +28,23 @@ func NewService(storage storage.URLStorage) *Service {
 // Если оригинальный URL уже существует, возвращает существующий короткий URL
 func (s *Service) CreateShortURL(originalURL string) (string, error) {
 	// Валидация URL
-	if err := validator.ValidateURL(originalURL); err != nil {
-		return "", err
+	if _, err := url.ParseRequestURI(originalURL); err != nil {
+		return "", errors.NewValidationError("Некорректный URL")
 	}
 
-	// Проверяем существующий URL
-	if existingURL, err := s.storage.GetExistingShortURL(originalURL); err == nil {
-		return existingURL, nil
+	// Проверяем, существует ли уже короткая ссылка для этого URL
+	if shortURL, err := s.storage.GetExistingShortURL(originalURL); err == nil {
+		return shortURL, nil
 	}
 
-	shortURL := generateShortURL()
-	err := s.storage.SaveURL(originalURL, shortURL)
+	// Генерируем короткий URL
+	shortURL, err := s.generateShortURL()
 	if err != nil {
+		return "", errors.NewDatabaseError(err)
+	}
+
+	// Сохраняем в базу данных
+	if err := s.storage.SaveURL(originalURL, shortURL); err != nil {
 		return "", errors.NewDatabaseError(err)
 	}
 
@@ -63,11 +69,11 @@ func (s *Service) GetOriginalURL(shortURL string) (string, error) {
 }
 
 // generateShortURL генерирует случайную строку для короткого URL
-func generateShortURL() string {
-	result := make([]byte, 10)
-	for i := 0; i < 10; i++ {
-		n, _ := rand.Int(rand.Reader, big.NewInt(int64(len(chars))))
-		result[i] = chars[n.Int64()]
+func (s *Service) generateShortURL() (string, error) {
+	b := make([]byte, 6)
+	_, err := rand.Read(b)
+	if err != nil {
+		return "", err
 	}
-	return string(result)
+	return base64.URLEncoding.EncodeToString(b)[:6], nil
 }

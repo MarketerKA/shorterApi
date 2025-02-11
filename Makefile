@@ -5,7 +5,7 @@ DOCKER_COMPOSE := $(shell if command -v docker-compose >/dev/null 2>&1; then ech
 
 # Тестирование
 test:
-	go test -v ./internal/tests/...
+	go test -v -count=1 ./internal/tests/...
 
 # Локальная сборка
 build:
@@ -23,7 +23,7 @@ clean:
 # Docker операции
 docker-test:
 	docker build --target builder -t url-shortener-test .
-	docker run --rm url-shortener-test go test -v ./internal/tests/...
+	docker run --rm url-shortener-test go test -v -count=1 ./internal/tests/...
 
 docker-build: docker-test
 	docker build -t url-shortener .
