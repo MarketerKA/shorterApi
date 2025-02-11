@@ -30,7 +30,7 @@ FROM alpine:latest
 
 WORKDIR /app
 
-# Копируем бинарный файл из этапа сборки
+# Копируем бинарный файл и статические файлы из этапа сборки
 COPY --from=builder /app/main .
 COPY --from=builder /app/static ./static
 COPY --from=builder /app/.env .

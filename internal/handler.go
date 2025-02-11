@@ -71,6 +71,18 @@ func (h *Handler) GetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Если это корневой путь, отправляем index.html
+	if r.URL.Path == "/" {
+		http.ServeFile(w, r, "static/test.html")
+		return
+	}
+
+	// Игнорируем запросы к favicon.ico
+	if r.URL.Path == "/favicon.ico" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	shortURL := r.URL.Path[1:]
 	if shortURL == "" {
 		http.Error(w, "Короткая ссылка не указана", http.StatusBadRequest)
