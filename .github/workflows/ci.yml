@@ -32,6 +32,15 @@ jobs:
     - name: Run tests
       run: make test
 
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build Docker image
+      run: docker build -t url-shortener .
+
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
