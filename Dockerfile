@@ -10,11 +10,11 @@ RUN apk add --no-cache gcc musl-dev git
 ENV GOPROXY=direct
 ENV GO111MODULE=on
 
-# Копируем файлы с зависимостями
-COPY go.mod go.sum ./
+# Копируем только go.mod сначала
+COPY go.mod ./
 
-# Скачиваем зависимости
-RUN go mod download
+# Скачиваем зависимости и создаем go.sum
+RUN go mod download && go mod verify
 
 # Копируем исходный код
 COPY . .
