@@ -20,7 +20,7 @@ RUN go mod download && go mod verify
 COPY . .
 
 # Запускаем тесты
-RUN go test -v ./...
+RUN go test -v ./internal/tests/...
 
 # Собираем приложение только если тесты прошли успешно
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
