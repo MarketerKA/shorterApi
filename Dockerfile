@@ -38,7 +38,7 @@ WORKDIR /app
 # Копируем бинарный файл и статические файлы из этапа сборки
 COPY --from=builder /app/main .
 COPY --from=builder /app/static ./static
-COPY --from=builder /app/.env .
+COPY --from=builder /app/.env.example /app/.env
 
 # Открываем порт
 EXPOSE 8080

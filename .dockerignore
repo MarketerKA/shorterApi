@@ -6,6 +6,7 @@ docker-compose.yml
 *.log
 tmp/
 
-# НЕ игнорировать go.mod и go.sum
+# НЕ игнорировать важные файлы
 !go.mod
 !go.sum
+!.env.example
